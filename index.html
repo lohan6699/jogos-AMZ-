@@ -1,1074 +1,471 @@
-p-bar"></div>
-      <div class="modal-body">
-        <div class="m-orbe" id="m-orbe">
-          <div class="m-orbe-inner" id="m-orbe-inner">
-            <span class="m-emoji" id="m-emoji">👁</span>
-          </div>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guerreiro da Amazônia: Corrida Pela Floresta</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            background: #111;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            background: #1a3c1e;
+            border: 4px solid #2e7d32;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #4da6ff, #85e0ff);
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+        #score-box { color: #ffd700; }
+        #highscore-box { color: #a5d6a7; }
+        
+        #screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        h1 {
+            color: #4caf50;
+            margin-bottom: 10px;
+            font-size: 36px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        p {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #ccc;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background: #2e7d32;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+            pointer-events: auto;
+        }
+        button:hover {
+            background: #388e3c;
+            transform: scale(1.05);
+        }
+        #controls-hint {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #888;
+        }
+        /* Botão para Mobile */
+        #mobile-jump-btn {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.3);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+        }
+        @media (max-width: 820px) {
+            #game-container {
+                width: 100%;
+                height: 300px;
+            }
+            #mobile-jump-btn { display: flex; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div id="ui-layer">
+            <div class="stats">
+                <div id="score-box">Sementes: <span id="score">0</span></div>
+                <div id="highscore-box">Recorde: <span id="highscore">0</span></div>
+            </div>
+            
+            <div id="mobile-jump-btn">PULAR</div>
         </div>
-        <div class="m-tipo" id="m-tipo">Entidade Mística</div>
-        <div class="m-nome" id="m-nome">Nome da Lenda</div>
-        <div class="m-separador">
-          <div class="m-sep-linha" id="m-sep-l1"></div>
-          <span class="m-sep-ico" id="m-sep-ico">🌿</span>
-          <div class="m-sep-linha" id="m-sep-l2"></div>
+
+        <div id="screen-overlay">
+            <h1 id="screen-title">Defensor da Amazônia</h1>
+            <p id="screen-desc">Ajude o curupira a coletar sementes sagradas e desviar dos troncos cortados pelos lenhadores!</p>
+            <button id="start-btn">JOGAR</button>
+            <div id="controls-hint">Pressione ESPAÇO, SETA PARA CIMA ou Toque na tela para pular</div>
         </div>
-        <div class="m-texto" id="m-texto">Descrição da lenda...</div>
-        <div class="m-dica" id="m-dica">
-          <div class="m-dica-label">Como Sobreviver</div>
-          <div class="m-dica-txt" id="m-dica-txt">Instruções...</div>
-        </div>
-        <div class="m-efeito" id="m-efeito">Status</div>
-        <div class="m-btns">
-          <button class="btn-fechar primario" id="m-btn-ok" onclick="fecharModalLenda()">Assimilar Conhecimento</button>
-        </div>
-      </div>
     </div>
-  </div>
-</div>
-
-<div id="toast">Notificação Especial</div>
-<div id="dmg-flash"></div>
-<div id="vinheta"></div>
-<div id="overlay-morte"></div>
-<div id="overlay-frio"></div>
-<div id="overlay-veneno"></div>
-<div id="overlay-sanidade"></div>
-
-<div id="tela-fim">
-  <div class="fim-titulo" id="fim-titulo">VOCÊ PERCEBEU A FLORESTA</div>
-  <div class="fim-linha"></div>
-  <div class="fim-causa" id="fim-causa">Sua jornada foi interrompida pelas sombras da noite.</div>
-  <div class="fim-stats">
-    <div>Dias Sobrevividos:</div><div class="fim-stat-v" id="f-dias">0</div>
-    <div>Lendas Encontradas:</div><div class="fim-stat-v" id="f-lendas">0/10</div>
-    <div>Itens Fabricados:</div><div class="fim-stat-v" id="f-crafted">0</div>
-  </div>
-  <div class="fim-conquistas" id="fim-conquistas"></div>
-  <button class="btn-start" onclick="location.reload()">Tentar Novamente</button>
-</div>
 
 <script>
-// ============================================================================
-// AMAZÔNIA ULTIMATE ENGINE - CORE DATA & STATE
-// ============================================================================
-
-const LENDAS_DATA = [
-  { id: 1, nome: "Curupira", emoji: "🦧", cor: "#00ff7f", tipo: "Protetor das Matas", desc: "Espírito com pés virados para trás que confunde caçadores e protege a fauna.", dica: "Não use ferramentas destrutivas perto dele. Respeite as árvores anciãs.", efeito: "Sanidade +10" },
-  { id: 2, nome: "Boitatá", emoji: "🐍", cor: "#ffaa00", tipo: "Cobra de Fogo", desc: "Uma gigantesca serpente de fogo que queima quem destrói as matas e cega os gananciosos.", dica: "Fique imóvel quando ela cruzar seu caminho. Apague focos de fogo mundanos.", efeito: "Imunidade ao Frio" },
-  { id: 3, nome: "Saci-Pererê", emoji: "🌪", cor: "#ff2800", tipo: "Espírito Brincalhão", desc: "Menino de uma perna só que controla redemoinhos. Adora pregar peças e roubar pertences.", dica: "Mantenha fumo ou oferendas no inventário para acalmá-lo.", efeito: "Velocidade Aumentada" },
-  { id: 4, nome: "Iara", emoji: "🧜‍♀️", cor: "#00bfff", tipo: "Mãe das Águas", desc: "Sereia dos rios amazônicos cujo canto hipnotiza homens, atraindo-os para as profundezas.", dica: "Evite coletar água à noite se ouvir um canto distante.", efeito: "Sede Reduzida" },
-  { id: 5, nome: "Boto Cor-de-Rosa", emoji: "🐬", cor: "#ff69b4", tipo: "Metamorfo das Águas", desc: "Criatura charmosa que se transforma em um homem elegante para seduzir os desatentos.", dica: "Não confie em vultos usando chapéu perto das margens fluviais.", efeito: "Energia Restaurada" },
-  { id: 6, nome: "Mapinguari", emoji: "🦍", cor: "#8b4513", tipo: "Gigante da Selva", desc: "Fera gigantesca com um olho na testa e uma boca enorme na barriga. Invulnerável a balas.", dica: "Corra imediatamente se sentir um forte odor de enxofre.", efeito: "Defesa Aumentada" },
-  { id: 7, nome: "Matinta Perera", emoji: "🧙", cor: "#4b0082", tipo: "Bruxa Mutante", desc: "Velha feiticeira que se transforma em um pássaro agourento e exige tabaco pela manhã.", dica: "Prometa tabaco quando ela assobiar. Cumpra a promessa no dia seguinte.", efeito: "Visão Noturna Superior" },
-  { id: 8, nome: "Cobra Grande", emoji: "🐉", cor: "#2e8b57", tipo: "Força Criadora", desc: "Ser gigantesco que rastejou abrindo os leitos dos rios amazônicos. Seu despertar treme a terra.", dica: "Procure as áreas de relevo rochoso alto quando o chão tremer.", efeito: "Resistência Máxima" },
-  { id: 9, nome: "Caipora", emoji: "🐗", cor: "#556b2f", tipo: "Senhora dos Animais", desc: "Entidade que cavalga um porco-do-mato, punindo severamente o abate desnecessário.", dica: "Sempre faça uma oferenda antes de consumir carne na selva.", efeito: "Sorte na Coleta" },
-  { id: 10, nome: "Uiara", emoji: "🌿", cor: "#adff2f", tipo: "Espírito da Flora", desc: "A própria personificação da floresta medicinal, guardiã das ervas secretas de cura.", dica: "Colete plantas raras sem danificar suas raízes primárias.", efeito: "Cura Passiva Ativada" }
-];
-
-const CRAFT_RECIPES = [
-  { id: "tocha", nome: "Tocha de Resina", desc: "Iluminação rudimentar confiável contra o frio.", req: { graveto: 2, resina: 1 }, pronto: true },
-  { id: "filtro", nome: "Filtro de Carvão", desc: "Purifica águas contaminadas dos igarapés.", req: { bambu: 1, carvao: 1 }, pronto: true },
-  { id: "medicamento", nome: "Unguento de Uiara", desc: "Cura envenenamentos e fecha feridas profundas.", req: { erva: 2, resina: 1 }, pronto: true },
-  { id: "lanca", nome: "Lança de Jagua", desc: "Arma defensiva essencial contra predadores e feras.", req: { graveto: 2, pedra: 1 }, pronto: true },
-  { id: "abrigo", nome: "Cabana Improvisada", desc: "Permite descansar para recuperar energia e calor.", req: { graveto: 4, folha: 4 }, pronto: true }
-];
-
-const CONQUISTAS_DATA = {
-  primeiroPasso: { nome: "Sobrevivente Iniciante", desc: "Passou as primeiras horas na selva.", dest: false },
-  artesao: { nome: "Mestre do Improviso", desc: "Fabricou 3 itens diferentes.", dest: false },
-  mitologia: { nome: "Conexão Mística", desc: "Descobriu 5 lendas da Amazônia.", dest: false },
-  imortal: { nome: "Espírito da Floresta", desc: "Descobriu as 10 lendas e dominou o bioma.", dest: false }
-};
-
-let status = { vida: 100, fome: 100, sede: 100, energia: 100, sanidade: 100, temp: 36.5, veneno: 0, frio: 0 };
-let inventario = { graveto: 3, folha: 2, resina: 1, pedra: 1, erva: 0, bambu: 0, carvao: 0, peixe: 0, agua_suja: 0, agua_limpa: 0 };
-let jogoAtivo = false, dia = 1, periodo = 0; // 0:Manhã, 1:Tarde, 2:Noite
-let lendasVistas = [], itensCraftados = 0, registrosDiario = [];
-let lanternaLigada = false, lanternaBateria = 100;
-let clima = "limpo"; // limpo, chuva, tempestade
-
-// Sistema de Grid do Mundo Histórico
-const TAM_MAPA = 40;
-let mapa = [];
-let playerPos = { x: 20, y: 20 };
-let entidades = []; // Inimigos / Coletáveis / Lendas interativas
-
-// Contextos Gráficos
-let introCtx, tituloCtx, mundoCtx, miniCtx, modalCtx;
-let introAnim, tituloAnim, mundoAnim, modalAnim;
-
-// Estado do Controle (Gamepad API)
-let gpIndex = null, gpAcaoSelIndex = 0, gpCraftSelIndex = 0, gpEmCraft = false;
-
-// ============================================================================
-// INTRO & CARREGAMENTO SINTÉTICO
-// ============================================================================
-
-window.addEventListener("DOMContentLoaded", () => {
-  setupCanvases();
-  iniciarIntro();
-  setupInputs();
-  window.addEventListener("gamepadconnected", (e) => {
-    gpIndex = e.gamepad.index;
-    document.getElementById("gp-indicator").style.display = "block";
-    adicionarDiario("Controle conectado e mapeado com sucesso.");
-  });
-});
-
-function setupCanvases() {
-  const iC = document.getElementById("intro-canvas");
-  const tC = document.getElementById("titulo-canvas");
-  const mC = document.getElementById("canvas-mundo");
-  const mnC = document.getElementById("canvas-mini");
-  
-  introCtx = iC.getContext("2d");
-  tituloCtx = tC.getContext("2d");
-  mundoCtx = mC.getContext("2d");
-  miniCtx = mnC.getContext("2d");
-  modalCtx = document.getElementById("modal-canvas").getContext("2d");
-
-  const redimensionar = () => {
-    iC.width = tC.width = window.innerWidth;
-    iC.height = tC.height = window.innerHeight;
-    mC.width = window.innerWidth;
-    mC.height = window.innerHeight;
-  };
-  window.addEventListener("resize", redimensionar);
-  redimensionar();
-}
-
-function iniciarIntro() {
-  let progresso = 0;
-  const barra = document.getElementById("intro-bar-fill");
-  const statusTxt = document.getElementById("intro-status");
-  const pressTxt = document.getElementById("intro-press");
-
-  const frasesLoad = [
-    "Sintonizando harmônicos da floresta...",
-    "Materializando igarapés e restingas...",
-    "Invocando os antigos espíritos...",
-    "Preparando sua mente para o julgamento..."
-  ];
-
-  function loop() {
-    introCtx.fillStyle = "rgba(0,4,0,0.08)";
-    introCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
     
-    // Partículas orgânicas na intro
-    for (let i = 0; i < 3; i++) {
-      introCtx.fillStyle = Math.random() > 0.5 ? "#00ff7f" : "#e8c040";
-      introCtx.globalAlpha = Math.random() * 0.4;
-      introCtx.beginPath();
-      introCtx.arc(Math.random() * window.innerWidth, Math.random() * window.innerHeight, Math.random() * 3, 0, Math.PI * 2);
-      introCtx.fill();
-    }
-    introCtx.globalAlpha = 1.0;
+    // UI Elements
+    const screenOverlay = document.getElementById('screen-overlay');
+    const screenTitle = document.getElementById('screen-title');
+    const screenDesc = document.getElementById('screen-desc');
+    const startBtn = document.getElementById('start-btn');
+    const scoreDisplay = document.getElementById('score');
+    const highscoreDisplay = document.getElementById('highscore');
+    const mobileJumpBtn = document.getElementById('mobile-jump-btn');
 
-    if (progresso < 100) {
-      progresso += 0.6;
-      barra.style.width = Math.min(progresso, 100) + "%";
-      statusTxt.innerText = frasesLoad[Math.floor((progresso / 101) * frasesLoad.length)];
-    } else {
-      statusTxt.style.display = "none";
-      pressTxt.style.display = "block";
-    }
-    introAnim = requestAnimationFrame(loop);
-  }
-  loop();
+    // Configurações do Jogo
+    let gameState = 'MENU'; // MENU, PLAYING, GAMEOVER
+    let score = 0;
+    let highscore = localStorage.getItem('amazon_highscore') || 0;
+    highscoreDisplay.innerText = highscore;
 
-  const prosseguir = () => {
-    if (progresso >= 100) {
-      cancelAnimationFrame(introAnim);
-      document.getElementById("tela-intro").style.display = "none";
-      document.getElementById("tela-titulo").style.display = "flex";
-      iniciarTelaTitulo();
-      document.removeEventListener("keydown", prosseguir);
-      document.removeEventListener("click", prosseguir);
-    }
-  };
-  document.addEventListener("keydown", prosseguir);
-  document.addEventListener("click", prosseguir);
-}
-
-// ============================================================================
-// TELA DE TÍTULO (SISTEMA DE PARTÍCULAS RADIAIS)
-// ============================================================================
-
-function iniciarTelaTitulo() {
-  let particulas = [];
-  for(let i=0; i<60; i++) {
-    particulas.push({
-      x: window.innerWidth / 2, y: window.innerHeight / 2,
-      a: Math.random() * Math.PI * 2, v: 0.5 + Math.random() * 1.5,
-      r: 1 + Math.random() * 2, c: Math.random() > 0.4 ? "#236023" : "#c89010"
-    });
-  }
-
-  function loop() {
-    tituloCtx.fillStyle = "rgba(1, 6, 1, 0.15)";
-    tituloCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-    particulas.forEach(p => {
-      p.x += Math.cos(p.a) * p.v;
-      p.y += Math.sin(p.a) * p.v;
-      if(p.x < 0 || p.x > window.innerWidth || p.y < 0 || p.y > window.innerHeight) {
-        p.x = window.innerWidth / 2; p.y = window.innerHeight / 2;
-        p.a = Math.random() * Math.PI * 2;
-      }
-      tituloCtx.fillStyle = p.c;
-      tituloCtx.beginPath();
-      tituloCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      tituloCtx.fill();
-    });
-
-    tituloAnim = requestAnimationFrame(loop);
-  }
-  loop();
-}
-
-// ============================================================================
-// ENTRADA NO JOGO & GERAÇÃO PROCEDURAL DO MAPA
-// ============================================================================
-
-function iniciarJogo() {
-  cancelAnimationFrame(tituloAnim);
-  document.getElementById("tela-titulo").style.display = "none";
-  document.getElementById("jogo").style.display = "block";
-  document.getElementById("hud").style.display = "block";
-  document.getElementById("mini-mapa").style.display = "block";
-  document.getElementById("log-area").style.display = "block";
-  document.getElementById("lanterna-hud").style.display = "block";
-  document.getElementById("bussola").style.display = "block";
-
-  gerarMundoProcedural();
-  construirLendasHudh();
-  jogoAtActive = true;
-  jogoAtivo = true;
-  
-  adicionarDiario("Você acordou em um ponto remoto da bacia amazônica. A floresta observa.");
-  atualizarHud();
-  
-  // Loops Principais
-  setInterval(loopCicloTempo, 8000); // Avanço de hora rápido para gameplay dinâmico
-  setInterval(loopMetabolismo, 2500);
-  setInterval(loopControleEfeitos, 1000);
-  
-  requestAnimationFrame(loopMundo);
-}
-
-function gerarMundoProcedural() {
-  // Geração de Matriz Base: 0=Vazio/Grama, 1=Árvores Densas, 2=Água/Igarapé, 3=Rocha
-  for (let x = 0; x < TAM_MAPA; x++) {
-    mapa[x] = [];
-    for (let y = 0; y < TAM_MAPA; y++) {
-      let r = Math.random();
-      if ((x === 0 || x === TAM_MAPA-1 || y === 0 || y === TAM_MAPA-1)) {
-        mapa[x][y] = 1; // Fronteira intransponível de mata fechada
-      } else if (r < 0.22) {
-        mapa[x][y] = 1; // Árvores
-      } else if (r > 0.22 && r < 0.31) {
-        mapa[x][y] = 2; // Igarapé
-      } else if (r > 0.96) {
-        mapa[x][y] = 3; // Rocha
-      } else {
-        mapa[x][y] = 0; // Solo limpo
-      }
-    }
-  }
-  
-  // Garantir ponto seguro no spawn
-  mapa[playerPos.x][playerPos.y] = 0;
-  mapa[playerPos.x+1][playerPos.y] = 0;
-  mapa[playerPos.x][playerPos.y+1] = 0;
-
-  // Inserir Recursos Coletáveis Procedurais no mapa
-  for (let i = 0; i < 45; i++) {
-    let rx = Math.floor(Math.random() * (TAM_MAPA - 2)) + 1;
-    let ry = Math.floor(Math.random() * (TAM_MAPA - 2)) + 1;
-    if (mapa[rx][ry] === 0) {
-      const tipos = ["graveto", "folha", "resina", "pedra", "erva", "bambu"];
-      entidades.push({
-        x: rx, y: ry,
-        tipo: "recurso",
-        item: tipos[Math.floor(Math.random() * tipos.length)]
-      });
-    }
-  }
-
-  // Inserir as 10 Lendas Ocultas no Mapa
-  LENDAS_DATA.forEach(lenda => {
-    let posValida = false, lx, ly;
-    while (!posValida) {
-      lx = Math.floor(Math.random() * (TAM_MAPA - 4)) + 2;
-      ly = Math.floor(Math.random() * (TAM_MAPA - 4)) + 2;
-      if (mapa[lx][ly] === 0 && Math.abs(lx - playerPos.x) > 4) posValida = true;
-    }
-    entidades.push({
-      x: lx, y: ly,
-      tipo: "lenda",
-      data: lenda,
-      descoberta: false
-    });
-  });
-
-  // Inserir Inimigos Perigosos (Onça-Pintada, Jararaca)
-  for (let i = 0; i < 6; i++) {
-    let ix = Math.floor(Math.random() * (TAM_MAPA - 2)) + 1;
-    let iy = Math.floor(Math.random() * (TAM_MAPA - 2)) + 1;
-    if (mapa[ix][iy] === 0) {
-      entidades.push({
-        x: ix, y: iy,
-        tipo: "inimigo",
-        subtipo: Math.random() > 0.5 ? "Onça" : "Jararaca",
-        vida: 40,
-        furia: false
-      });
-    }
-  }
-}
-
-function construirLendasHudh() {
-  const container = document.getElementById("lendas-ico");
-  container.innerHTML = "";
-  LENDAS_DATA.forEach(l => {
-    const w = document.createElement("div");
-    w.className = "lenda-ico-wrap";
-    w.id = `lenda-hud-${l.id}`;
-    w.innerHTML = l.emoji;
-    w.title = "Lenda Oculta";
-    w.onclick = () => { if(lendasVistas.includes(l.id)) mostrarModalLenda(l); };
-    container.appendChild(w);
-  });
-}
-
-// ============================================================================
-// ENGINE DE RENDERIZAÇÃO 2D (GRID + CAMADAS DE LUZ)
-// ============================================================================
-
-function loopMundo() {
-  if (!jogoAtivo) return;
-
-  processarControleGamepad();
-
-  // Limpar Canvas Principal
-  mundoCtx.fillStyle = "#010501";
-  mundoCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-  const tamTile = 64; // Escala visual expandida
-  const centroX = window.innerWidth / 2;
-  const centroY = window.innerHeight / 2;
-
-  // Desenhar Camada do Terreno
-  for (let x = 0; x < TAM_MAPA; x++) {
-    for (let y = 0; y < TAM_MAPA; y++) {
-      let renderX = centroX + (x - playerPos.x) * tamTile - tamTile/2;
-      let renderY = centroY + (y - playerPos.y) * tamTile - tamTile/2;
-
-      // Culling básico
-      if (renderX < -tamTile || renderX > window.innerWidth + tamTile || renderY < -tamTile || renderY > window.innerHeight + tamTile) continue;
-
-      switch(mapa[x][y]) {
-        case 0: mundoCtx.fillStyle = "#091c0e"; break; // Solo
-        case 1: mundoCtx.fillStyle = "#051207"; break; // Árvores
-        case 2: mundoCtx.fillStyle = "#0c2b3a"; break; // Água
-        case 3: mundoCtx.fillStyle = "#252b25"; break; // Rocha
-      }
-      mundoCtx.fillRect(renderX, renderY, tamTile - 1, tamTile - 1);
-
-      // Elementos estéticos internos
-      if(mapa[x][y] === 1) {
-        mundoCtx.fillStyle = "#123a18";
-        mundoCtx.beginPath();
-        mundoCtx.arc(renderX + tamTile/2, renderY + tamTile/2, tamTile/3, 0, Math.PI*2);
-        mundoCtx.fill();
-      }
-    }
-  }
-
-  // Desenhar Entidades Coletáveis, Inimigos e Lendas
-  entidades.forEach(ent => {
-    let rX = centroX + (ent.x - playerPos.x) * tamTile;
-    let rY = centroY + (ent.y - playerPos.y) * tamTile;
-
-    if (ent.tipo === "recurso") {
-      mundoCtx.fillStyle = "#e8c040";
-      mundoCtx.font = "14px monospace";
-      mundoCtx.fillText("📦", rX - 7, rY + 5);
-    } else if (ent.tipo === "lenda") {
-      mundoCtx.fillStyle = ent.data.cor;
-      mundoCtx.font = "20px serif";
-      mundoCtx.fillText(ent.descoberta ? ent.data.emoji : "✨", rX - 10, rY + 8);
-    } else if (ent.tipo === "inimigo") {
-      mundoCtx.fillStyle = "#ff2800";
-      mundoCtx.font = "18px serif";
-      mundoCtx.fillText(ent.subtipo === "Onça" ? "🐆" : "🐍", rX - 9, rY + 6);
-    }
-  });
-
-  // Desenhar Player (Explorador)
-  mundoCtx.fillStyle = "#ffe868";
-  mundoCtx.beginPath();
-  mundoCtx.arc(centroX, centroY, 12, 0, Math.PI * 2);
-  mundoCtx.fill();
-  mundoCtx.strokeStyle = "#00ff7f";
-  mundoCtx.lineWidth = 2;
-  mundoCtx.stroke();
-
-  // Camada Atmosférica Noturna e Lanterna Avançada
-  processarIluminacaoAtmosferica(centroX, centroY);
-  
-  // Renderizar Mini-Mapa Real-Time
-  renderizarMiniMapa();
-
-  mundoAnim = requestAnimationFrame(loopMundo);
-}
-
-function processarIluminacaoAtmosferica(cX, cY) {
-  if (periodo !== 2 && clima === "limpo") return;
-
-  // Criar overlay de escuridão total
-  let luzCanvas = document.createElement('canvas');
-  luzCanvas.width = window.innerWidth;
-  luzCanvas.height = window.innerHeight;
-  let lCtx = luzCanvas.getContext('2d');
-
-  let opacidadeBase = (periodo === 2) ? 0.94 : 0.45; // Noite ou Tempestade de dia
-  lCtx.fillStyle = `rgba(1, 6, 2, ${opacidadeBase})`;
-  lCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-  if (lanternaLigada && lanternaBateria > 0) {
-    // Corte radial da luz da lanterna usando blend mode
-    lCtx.globalCompositeOperation = 'destination-out';
-    let grad = lCtx.createRadialGradient(cX, cY, 10, cX, cY, 190);
-    grad.addColorStop(0, 'rgba(0,0,0,1)');
-    grad.addColorStop(0.6, 'rgba(0,0,0,0.5)');
-    grad.addColorStop(1, 'rgba(0,0,0,0)');
-    lCtx.fillStyle = grad;
-    lCtx.beginPath();
-    lCtx.arc(cX, cY, 190, 0, Math.PI * 2);
-    lCtx.fill();
-    lCtx.globalCompositeOperation = 'source-over';
-  }
-
-  mundoCtx.drawImage(luzCanvas, 0, 0);
-}
-
-function renderizarMiniMapa() {
-  miniCtx.fillStyle = "#010801";
-  miniCtx.fillRect(0, 0, 140, 140);
-
-  let tamPixel = 140 / TAM_MAPA;
-  for (let x = 0; x < TAM_MAPA; x++) {
-    for (let y = 0; y < TAM_MAPA; y++) {
-      if (mapa[x][y] === 1) miniCtx.fillStyle = "#051a09";
-      else if (mapa[x][y] === 2) miniCtx.fillStyle = "#0a2535";
-      else miniCtx.fillStyle = "#0e2d16";
-      miniCtx.fillRect(x * tamPixel, y * tamPixel, tamPixel, tamPixel);
-    }
-  }
-
-  // Ponto do Player no radar
-  miniCtx.fillStyle = "#fff";
-  miniCtx.fillRect(playerPos.x * tamPixel, playerPos.y * tamPixel, tamPixel + 1, tamPixel + 1);
-}
-
-// ============================================================================
-// SISTEMAS DE SIMULAÇÃO (METABOLISMO, CLIMA, COMPORTAMENTO)
-// ============================================================================
-
-function loopCicloTempo() {
-  periodo++;
-  if (periodo > 2) {
-    periodo = 0;
-    dia++;
-  }
-
-  const elHora = document.getElementById("hora-txt");
-  let labelPeriodo = "";
-  
-  if (periodo === 0) { labelPeriodo = "Manhã"; status.temp = 36.5; }
-  else if (periodo === 1) { labelPeriodo = "Tarde"; status.temp = 38.2; }
-  else { labelPeriodo = "Noite 🌙"; status.temp = 22.0; adicionarDiario("A noite caiu. Os perigos e as lendas despertam com força total."); }
-
-  elHora.innerText = `☀ Dia ${dia} — ${labelPeriodo}`;
-
-  // Chance de alteração climática repentina
-  if (Math.random() > 0.65) {
-    clima = Math.random() > 0.5 ? "chuva" : "tempestade";
-    document.getElementById("toast").innerText = `Clima Alterado: Mudar para ${clima.toUpperCase()}`;
-    exibirToast();
-  } else {
-    clima = "limpo";
-  }
-
-  atualizarBussola();
-}
-
-function loopMetabolismo() {
-  if (!jogoAtivo) return;
-
-  // Consumo base orgânico
-  status.fome = Math.max(0, status.fome - 2);
-  status.sede = Math.max(0, status.sede - 3);
-  status.energia = Math.max(0, status.energia - 1);
-
-  if (periodo === 2) status.sanidade = Math.max(0, status.sanidade - 2); // Escuridão drena mente
-  if (clima === "tempestade") { status.sanidade = Math.max(0, status.sanidade - 2); status.temp -= 2; }
-
-  // Danos causados por privação extrema
-  if (status.fome <= 0 || status.sede <= 0 || status.energia <= 0 || status.sanidade <= 0) {
-    modificarVida(-5, "Inanição ou colapso psicológico severo na mata.");
-  }
-
-  // Comportamento da bateria da lanterna
-  if (lanternaLigada) {
-    lanternaBateria = Math.max(0, lanternaBateria - 4);
-    document.getElementById("lant-fill").style.width = lanternaBateria + "%";
-    if(lanternaBateria <= 0) { lanternaLigada = false; document.getElementById("lant-estado").innerText = "SEM ENERGIA"; }
-  }
-
-  // Movimentação Autônoma Básica dos Inimigos (IA de Patrulha)
-  entidades.forEach(ent => {
-    if (ent.tipo === "inimigo") {
-      let dx = Math.floor(Math.random() * 3) - 1;
-      let dy = Math.floor(Math.random() * 3) - 1;
-      if (mapa[ent.x + dx]?.[ent.y + dy] === 0) {
-        ent.x += dx;
-        ent.y += dy;
-      }
-      
-      // Proximidade agressiva com o jogador
-      if (Math.abs(ent.x - playerPos.x) <= 1 && Math.abs(ent.y - playerPos.y) <= 1) {
-        atacarJogador(ent);
-      }
-    }
-  });
-
-  atualizarHud();
-}
-
-function loopControleEfeitos() {
-  if (!jogoAtivo) return;
-
-  const container = document.getElementById("status-efeitos");
-  container.innerHTML = "";
-
-  if (status.veneno > 0) {
-    status.veneno = Math.max(0, status.veneno - 1);
-    modificarVida(-2, "Envenenamento por picada de Jararaca.");
-    container.innerHTML += `<span class="efeit-chip" style="color:#00ff7f;border-color:#00ff7f">🧪 Veneno</span>`;
-    document.getElementById("overlay-veneno").style.opacity = 0.5;
-  } else {
-    document.getElementById("overlay-veneno").style.opacity = 0;
-  }
-
-  if (status.temp < 25) {
-    modificarVida(-1, "Hipotermia devido ao frio noturno e chuva intensificada.");
-    container.innerHTML += `<span class="efeit-chip" style="color:#00bfff;border-color:#00bfff">🥶 Frio Extremo</span>`;
-    document.getElementById("overlay-frio").style.opacity = 0.6;
-  } else {
-    document.getElementById("overlay-frio").style.opacity = 0;
-  }
-
-  if (status.sanidade < 30) {
-    container.innerHTML += `<span class="efeit-chip" style="color:#d080ff;border-color:#d080ff">👁 Alucinações</span>`;
-    document.getElementById("overlay-sanidade").style.opacity = 0.4;
-  } else {
-    document.getElementById("overlay-sanidade").style.opacity = 0;
-  }
-}
-
-function atacarJogador(inimigo) {
-  document.getElementById("aviso-inimigo").classList.add("ativo");
-  setTimeout(() => document.getElementById("aviso-inimigo").classList.remove("ativo"), 1200);
-
-  if (inventario.lanca > 0) {
-    // Defesa automática consome a arma criada
-    inventario.lanca--;
-    inimigo.vida -= 25;
-    adicionarLog(`Você usou sua Lança de Jagua para se defender da ${inimigo.subtipo}!`);
-    if (inimigo.vida <= 0) {
-      entidades = entidades.filter(e => e !== inimigo);
-      adicionarLog(`Você abateu a ${inimigo.subtipo}.`);
-      inventario.carvao += 1; // Recurso ganho
-    }
-  } else {
-    modificarVida(-20, `Ataque direto de uma ${inimigo.subtipo}.`);
-    if (inimigo.subtipo === "Jararaca") status.veneno = 12;
-  }
-  atualizarHud();
-}
-
-function modificarVida(qtd, causa) {
-  status.vida = Math.max(0, Math.min(100, status.vida + qtd));
-  if (qtd < 0) {
-    const flash = document.getElementById("dmg-flash");
-    flash.style.opacity = 0.7;
-    setTimeout(() => flash.style.opacity = 0, 150);
-  }
-  if (status.vida <= 0) {
-    finalizarJogo(causa);
-  }
-}
-
-// ============================================================================
-// INPUT MANAGEMENT & MOVIMENTO TRADICIONAL / GAMEPAD
-// ============================================================================
-
-function setupInputs() {
-  document.addEventListener("keydown", (e) => {
-    if (!jogoAtivo) return;
+    let gameSpeed = 5;
+    const gravity = 0.6;
     
-    let nx = playerPos.x;
-    let ny = playerPos.y;
-
-    switch(e.key.toLowerCase()) {
-      case 'w': ny--; break;
-      case 's': ny++; break;
-      case 'a': nx--; break;
-      case 'd': nx++; break;
-      case 'f': alternarLanterna(); break;
-      case 'c': alternarCrafting(); break;
-      case 'j': alternarDiario(); break;
-      case 'e':
-      case 'enter':
-        executarAcaoContexto();
-        break;
-      case 'q': navegarAcaoLinear(-1); break;
-      case 'r': navegarAcaoLinear(1); break;
-    }
-
-    if (mapa[nx]?.[ny] === 0 || mapa[nx]?.[ny] === 2) {
-      // Permitir andar na grama ou na água (água desacelera ou consome mais energia)
-      if (mapa[nx][ny] === 2) status.energia = Math.max(0, status.energia - 1);
-      playerPos.x = nx;
-      playerPos.y = ny;
-      atualizarAcoesDisponiveis();
-      atualizarBussola();
-    }
-  });
-}
-
-function processarControleGamepad() {
-  if (gpIndex === null) return;
-  const gp = navigator.getGamepads()[gpIndex];
-  if (!gp) return;
-
-  // Deadzone para sticks analógicos
-  const limite = 0.4;
-  let moveX = 0, moveY = 0;
-
-  if (gp.axes[0] < -limite) moveX = -1;
-  if (gp.axes[0] > limite) moveX = 1;
-  if (gp.axes[1] < -limite) moveY = -1;
-  if (gp.axes[1] > limite) moveY = 1;
-
-  // Implementar throttle no movimento por eixos para evitar teletransporte frenético
-  if (moveX !== 0 || moveY !== 0) {
-    if (!this.lastGpMove || Date.now() - this.lastGpMove > 180) {
-      let nx = playerPos.x + moveX;
-      let ny = playerPos.y + moveY;
-      if (mapa[nx]?.[ny] === 0) { playerPos.x = nx; playerPos.y = ny; atualizarAcoesDisponiveis(); }
-      this.lastGpMove = Date.now();
-    }
-  }
-
-  // Mapeamento de botões padrão (Xbox/PlayStation)
-  // Botão A (0) - Ação Principal
-  if (gp.buttons[0].pressed) {
-    if(!this.b0P) {
-      if(gpEmCraft) fabricarItemGp();
-      else executarAcaoContexto();
-      this.b0P = true;
-    }
-  } else { this.b0P = false; }
-
-  // Botão B (1) - Fechar Telas Modais
-  if (gp.buttons[1].pressed) {
-    fecharCraft(); fecharDiario(); fecharModalLenda();
-  }
-
-  // Botão X (2) - Lanterna
-  if (gp.buttons[2].pressed) {
-    if(!this.b2P) { alternarLanterna(); this.b2P = true; }
-  } else { this.b2P = false; }
-
-  // Botão Y (3) - Abrir Menu de Fabricação
-  if (gp.buttons[3].pressed) {
-    if(!this.b3P) { alternarCrafting(); this.b3P = true; }
-  } else { this.b3P = false; }
-
-  // Bumpers LB (4) e RB (5) para alternar foco de botões contextuais
-  if (gp.buttons[4].pressed) {
-    if(!this.b4P) { if(gpEmCraft) navegarCraftGp(-1); else navegarAcaoLinear(-1); this.b4P = true; }
-  } else { this.b4P = false; }
-  
-  if (gp.buttons[5].pressed) {
-    if(!this.b5P) { if(gpEmCraft) navegarCraftGp(1); else navegarAcaoLinear(1); this.b5P = true; }
-  } else { this.b5P = false; }
-}
-
-// ============================================================================
-// CONTEXTUAL ACTIONS MECHANICS
-// ============================================================================
-
-let acoesContextuais = [];
-
-function atualizarAcoesDisponiveis() {
-  acoesContextuais = [];
-  const wrap = document.getElementById("acoes-wrap");
-  wrap.innerHTML = "";
-
-  // Verificar se há recursos no tile atual
-  let recs = entidades.filter(e => e.tipo === "recurso" && e.x === playerPos.x && e.y === playerPos.y);
-  recs.forEach(r => {
-    acoesContextuais.push({ label: `Coletar ${r.item.toUpperCase()}`, tipo: "coleta", alvo: r });
-  });
-
-  // Verificar se há lenda no tile atual ou adjacente
-  let lendas = entidades.filter(e => e.tipo === "lenda" && Math.abs(e.x - playerPos.x) <= 1 && Math.abs(e.y - playerPos.y) <= 1);
-  lendas.forEach(l => {
-    if(!l.descoberta) acoesContextuais.push({ label: `Investigar Presença Mística`, tipo: "lenda", alvo: l });
-    else acoesContextuais.push({ label: `Comungar com ${l.data.nome}`, tipo: "comungar", alvo: l });
-  });
-
-  // Ações básicas baseadas no tipo de solo
-  if (mapa[playerPos.x][playerPos.y] === 2) {
-    acoesContextuais.push({ label: "Coletar Água de Igarapé", tipo: "agua", alvo: null });
-  }
-
-  // Adicionar botões na interface
-  acoesContextuais.forEach((ac, index) => {
-    const btn = document.createElement("button");
-    btn.className = "btn-ac";
-    if (index === gpAcaoSelIndex) btn.classList.add("sel");
-    if (ac.tipo === "lenda") btn.classList.add("dest");
-    btn.innerText = ac.label;
-    btn.onclick = () => { gpAcaoSelIndex = index; executarAcaoContexto(); };
-    wrap.appendChild(btn);
-  });
-}
-
-function navegarAcaoLinear(dir) {
-  if (acoesContextuais.length === 0) return;
-  gpAcaoSelIndex = (gpAcaoSelIndex + dir + acoesContextuais.length) % acoesContextuais.length;
-  atualizarAcoesDisponiveis();
-}
-
-function executarAcaoContexto() {
-  if (acoesContextuais.length === 0 || !acoesContextuais[gpAcaoSelIndex]) return;
-  const ac = acoesContextuais[gpAcaoSelIndex];
-
-  if (ac.tipo === "coleta") {
-    inventario[ac.alvo.item]++;
-    entidades = entidades.filter(e => e !== ac.alvo);
-    adicionarLog(`Você coletou: [${ac.alvo.item.toUpperCase()}].`);
-  } 
-  else if (ac.tipo === "lenda") {
-    ac.alvo.descoberta = true;
-    if (!lendasVistas.includes(ac.alvo.data.id)) {
-      lendasVistas.push(ac.alvo.data.id);
-      document.getElementById(`lenda-hud-${ac.alvo.data.id}`).classList.add("vista");
-      mostrarModalLenda(ac.alvo.data);
-      adicionarDiario(`Encontro místico documentado: A lenda do ${ac.alvo.data.nome}.`);
-      verificarConquistas();
-    }
-  }
-  else if (ac.tipo === "agua") {
-    inventario.agua_suja++;
-    adicionarLog("Você encheu um recipiente com água turva do igarapé.");
-  }
-  else if (ac.tipo === "comungar") {
-    status.sanidade = Math.min(100, status.sanidade + 15);
-    adicionarLog(`Você meditou sob a influência benfeitora de ${ac.alvo.data.nome}.`);
-  }
-
-  gpAcaoSelIndex = 0;
-  atualizarAcoesDisponiveis();
-  atualizarHud();
-}
-
-// ============================================================================
-// CRAFTING SYSTEM ENGINE
-// ============================================================================
-
-function alternarCrafting() {
-  const p = document.getElementById("painel-craft");
-  p.classList.toggle("aberto");
-  gpEmCraft = p.classList.contains("aberto");
-  if (gpEmCraft) {
-    document.getElementById("gp-craft-sel").style.display = "block";
-    renderizarListaCraft();
-  } else {
-    document.getElementById("gp-craft-sel").style.display = "none";
-  }
-}
-
-function fecharCraft() {
-  document.getElementById("painel-craft").classList.remove("aberto");
-  document.getElementById("gp-craft-sel").style.display = "none";
-  gpEmCraft = false;
-}
-
-function renderizarListaCraft() {
-  const grid = document.getElementById("craft-grid");
-  grid.innerHTML = "";
-
-  CRAFT_RECIPES.forEach((rec, idx) => {
-    const itemBox = document.createElement("div");
-    itemBox.className = "craft-item";
-    if (idx === gpCraftSelIndex) itemBox.classList.add("gp-sel");
-
-    // Validar requerimentos de insumos
-    let possuiTudo = true;
-    let txtReq = "";
-    for (let component in rec.req) {
-      let qtdDisponivel = inventario[component] || 0;
-      txtReq += `${component.toUpperCase()}: ${qtdDisponivel}/${rec.req[component]} | `;
-      if (qtdDisponivel < rec.req[component]) possuiTudo = false;
-    }
-
-    if (!possuiTudo) itemBox.classList.add("bloq");
-
-    itemBox.innerHTML = `
-      <div class="craft-item-nome">${rec.nome}</div>
-      <div class="craft-item-req">${txtReq.slice(0, -3)}</div>
-      <div class="craft-item-desc">${rec.desc}</div>
-    `;
-
-    itemBox.onclick = () => {
-      if (possuiTudo) { gpCraftSelIndex = idx; realizarCraftItem(rec); }
+    // Entidades do Jogo
+    let player = {
+        x: 80,
+        y: 280,
+        width: 40,
+        height: 60,
+        vy: 0,
+        isGrounded: false,
+        jumpForce: -13,
+        color: '#ff5722', // Cabelo vermelho do Curupira
+        draw() {
+            // Corpo/Roupa de folhas
+            ctx.fillStyle = '#4caf50';
+            ctx.fillRect(this.x, this.y + 20, this.width, this.height - 20);
+            // Cabeça
+            ctx.fillStyle = '#ffb74d';
+            ctx.fillRect(this.x + 5, this.y, this.width - 10, 20);
+            // Cabelo de Fogo (Curupira)
+            ctx.fillStyle = '#ff3d00';
+            ctx.fillRect(this.x + 2, this.y - 8, this.width - 4, 10);
+            // Pés virados para trás (detalhe folclórico)
+            ctx.fillStyle = '#d7ccc8';
+            ctx.fillRect(this.x - 5, this.y + this.height - 8, 12, 8);
+        },
+        jump() {
+            if (this.isGrounded) {
+                this.vy = this.jumpForce;
+                this.isGrounded = false;
+            }
+        },
+        update() {
+            this.vy += gravity;
+            this.y += this.vy;
+            
+            // Colisão com o chão fixo (altura do chão é 340)
+            if (this.y + this.height >= 340) {
+                this.y = 340 - this.height;
+                this.vy = 0;
+                this.isGrounded = true;
+            }
+        }
     };
 
-    grid.appendChild(itemBox);
-  });
-}
+    let obstacles = [];
+    let items = [];
+    let particles = [];
+    let clouds = [
+        {x: 100, y: 50, size: 40, speed: 0.5},
+        {x: 450, y: 80, size: 60, speed: 0.3},
+        {x: 700, y: 30, size: 35, speed: 0.6}
+    ];
 
-function navegarCraftGp(dir) {
-  gpCraftSelIndex = (gpCraftSelIndex + dir + CRAFT_RECIPES.length) % CRAFT_RECIPES.length;
-  renderizarListaCraft();
-}
+    // Classes para geração de objetos modernos e limpos
+    class Obstacle {
+        constructor() {
+            this.width = 30 + Math.random() * 20;
+            this.height = 40 + Math.random() * 30;
+            this.x = canvas.width + this.width;
+            this.y = 340 - this.height;
+            this.color = '#795548'; // Tronco cortado
+        }
+        update() {
+            this.x -= gameSpeed;
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            // Detalhe de linhas de motosserra/corte
+            ctx.fillStyle = '#5d4037';
+            ctx.fillRect(this.x + 2, this.y + 5, this.width - 4, 5);
+        }
+    }
 
-function fabricarItemGp() {
-  const rec = CRAFT_RECIPES[gpCraftSelIndex];
-  let possuiTudo = true;
-  for (let c in rec.req) { if ((inventario[c] || 0) < rec.req[c]) possuiTudo = false; }
-  if (possuiTudo) realizarCraftItem(rec);
-}
+    class Item {
+        constructor() {
+            this.size = 15;
+            this.x = canvas.width + 50;
+            this.y = 180 + Math.random() * 100;
+            this.color = '#ffd700'; // Semente dourada brilhante
+            this.angle = 0;
+        }
+        update() {
+            this.x -= gameSpeed;
+            this.angle += 0.1; // Efeito de rotação moderno
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x + this.size/2, this.y + this.size/2);
+            ctx.rotate(this.angle);
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(0, 0, this.size/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
 
-function realizarCraftItem(rec) {
-  // Deduzir materiais
-  for (let component in rec.req) {
-    inventario[component] -= rec.req[component];
-  }
+    class Particle {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.size = Math.random() * 5 + 2;
+            this.vx = (Math.random() - 0.5) * 6;
+            this.vy = (Math.random() - 0.5) * 6;
+            this.alpha = 1;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.alpha -= 0.03;
+        }
+        draw() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.restore();
+        }
+    }
 
-  // Incrementar item pronto
-  if (rec.id === "tocha") lanternaBateria = 100; // Recarrega/substitui fonte de luz
-  else if (rec.id === "filtro" && inventario.agua_suja > 0) { inventario.agua_suja--; inventario.agua_limpa++; }
-  else if (rec.id === "medicamento") { status.vida = Math.min(100, status.vida + 30); status.veneno = 0; }
-  else {
-    inventario[rec.id] = (inventario[rec.id] || 0) + 1;
-  }
+    // Spawners controlados por tempo/distância
+    let obstacleTimer = 0;
+    let itemTimer = 0;
 
-  itensCraftados++;
-  adicionarLog(`Item fabricado com sucesso: ${rec.nome}`);
-  verificarConquistas();
-  renderizarListaCraft();
-  atualizarHud();
-}
+    function resetGame() {
+        score = 0;
+        gameSpeed = 6;
+        obstacles = [];
+        items = [];
+        particles = [];
+        player.y = 280;
+        player.vy = 0;
+        scoreDisplay.innerText = score;
+    }
 
-// ============================================================================
-// DIÁRIO DE BORDO & NOTIFICAÇÕES (SISTEMA HISTÓRICO)
-// ============================================================================
+    function startGame() {
+        resetGame();
+        gameState = 'PLAYING';
+        screenOverlay.style.display = 'none';
+    }
 
-function alternarDiario() {
-  const p = document.getElementById("painel-diario");
-  p.classList.toggle("aberto");
-  if(p.classList.contains("aberto")) {
-    const corpo = document.getElementById("diario-corpo");
-    corpo.innerHTML = "";
-    registrosDiario.forEach(r => {
-      corpo.innerHTML += `
-        <div class="entrada-diario">
-          <span class="entrada-ts">${r.timestamp}</span>
-          ${r.txt}
-        </div>
-      `;
+    function gameOver() {
+        gameState = 'GAMEOVER';
+        if (score > highscore) {
+            highscore = score;
+            localStorage.setItem('amazon_highscore', highscore);
+            highscoreDisplay.innerText = highscore;
+        }
+        screenTitle.innerText = "Fim de Jogo!";
+        screenDesc.innerText = `Você salvou ${score} sementes da floresta moderna. Tente quebrar seu recorde!`;
+        startBtn.innerText = "JOGAR DE NOVO";
+        screenOverlay.style.display = 'flex';
+    }
+
+    // Loop Principal do Jogo (Engine de Renderização e Física)
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 1. DESENHAR CENÁRIO (Céu e Nuvens)
+        ctx.fillStyle = 'linear-gradient(to bottom, #4da6ff, #85e0ff)';
+        clouds.forEach(cloud => {
+            cloud.x -= cloud.speed;
+            if (cloud.x + cloud.size < 0) cloud.x = canvas.width + 50;
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
+            ctx.arc(cloud.x + cloud.size*0.6, cloud.y - cloud.size*0.2, cloud.size*0.8, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Árvores de fundo (Parallax simples)
+        ctx.fillStyle = '#1b5e20';
+        for(let i = 0; i < canvas.width; i += 120) {
+            ctx.beginPath();
+            ctx.moveTo(i - 40, 340);
+            ctx.lineTo(i + 20, 150);
+            ctx.lineTo(i + 80, 340);
+            ctx.fill();
+        }
+
+        // Chão da Floresta Amazônica
+        ctx.fillStyle = '#2e7d32';
+        ctx.fillRect(0, 340, canvas.width, 60);
+        ctx.fillStyle = '#1b5e20';
+        ctx.fillRect(0, 340, canvas.width, 8);
+
+        if (gameState === 'PLAYING') {
+            // Aumenta a velocidade do jogo gradualmente de forma imperceptível
+            gameSpeed += 0.001;
+
+            // Atualiza Jogador
+            player.update();
+            
+            // Gerar Obstáculos de tempos em tempos
+            obstacleTimer++;
+            if (obstacleTimer > Math.random() * 40 + 70) {
+                obstacles.push(new Obstacle());
+                obstacleTimer = 0;
+            }
+
+            // Gerar Itens (Sementes)
+            itemTimer++;
+            if (itemTimer > Math.random() * 50 + 50) {
+                items.push(new Item());
+                itemTimer = 0;
+            }
+        }
+
+        // Renderizar e Atualizar Obstáculos
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            if (gameState === 'PLAYING') obstacles[i].update();
+            obstacles[i].draw();
+
+            // Detecção de Colisão com o Jogador (AABB box)
+            if (
+                player.x < obstacles[i].x + obstacles[i].width &&
+                player.x + player.width > obstacles[i].x &&
+                player.y < obstacles[i].y + obstacles[i].height &&
+                player.y + player.height > obstacles[i].y
+            ) {
+                gameOver();
+            }
+
+            // Limpar do array se sair da tela
+            if (obstacles[i].x + obstacles[i].width < 0) {
+                obstacles.splice(i, 1);
+            }
+        }
+
+        // Renderizar e Atualizar Itens (Sementes)
+        for (let i = items.length - 1; i >= 0; i--) {
+            if (gameState === 'PLAYING') items[i].update();
+            items[i].draw();
+
+            // Coleta de Item
+            if (
+                player.x < items[i].x + items[i].size &&
+                player.x + player.width > items[i].x &&
+                player.y < items[i].y + items[i].size &&
+                player.y + player.height > items[i].y
+            ) {
+                score += 10;
+                scoreDisplay.innerText = score;
+                
+                // Criação do efeito de partículas moderno
+                for(let p=0; p<8; p++) {
+                    particles.push(new Particle(items[i].x, items[i].y));
+                }
+                items.splice(i, 1);
+                continue;
+            }
+
+            if (items[i].x + items[i].size < 0) items.splice(i, 1);
+        }
+
+        // Processar Partículas
+        for(let i = particles.length - 1; i >= 0; i--) {
+            particles[i].update();
+            particles[i].draw();
+            if(particles[i].alpha <= 0) particles.splice(i, 1);
+        }
+
+        // Desenhar Personagem principal por cima de tudo
+        player.draw();
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Controles (Input modernizado para PC e Mobile)
+    window.addEventListener('keydown', (e) => {
+        if ((e.code === 'Space' || e.code === 'ArrowUp')) {
+            if (gameState === 'PLAYING') {
+                player.jump();
+            } else if (gameState === 'MENU' || gameState === 'GAMEOVER') {
+                startGame();
+            }
+        }
     });
-  }
-}
 
-function fecharDiario() { document.getElementById("painel-diario").classList.remove("aberto"); }
+    // Toque para telas Mobile e Cliques de Botão
+    startBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Evita dar pulo duplo ao clicar no botão
+        startGame();
+    });
+    
+    mobileJumpBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (gameState === 'PLAYING') player.jump();
+    });
 
-function adicionarDiario(texto) {
-  const agora = new Date();
-  const ts = `${agora.getHours().toString().padStart(2,'0')}:${agora.getMinutes().toString().padStart(2,'0')}:${agora.getSeconds().toString().padStart(2,'0')}`;
-  registrosDiario.unshift({ timestamp: `Registro Ciclo d${dia} - ${ts}`, txt: texto });
-}
-
-function verificarConquistas() {
-  if (itensCraftados >= 1 && !CONQUISTAS_DATA.primeiroPasso.dest) dispararConquista("primeiroPasso");
-  if (itensCraftados >= 3 && !CONQUISTAS_DATA.artesao.dest) dispararConquista("artesao");
-  if (lendasVistas.length >= 5 && !CONQUISTAS_DATA.mitologia.dest) dispararConquista("mitologia");
-  if (lendasVistas.length === 10 && !CONQUISTAS_DATA.imortal.dest) dispararConquista("imortal");
-}
-
-function dispararConquista(id) {
-  CONQUISTAS_DATA[id].dest = true;
-  const notif = document.getElementById("conquista-notif");
-  document.getElementById("conq-nome").innerText = CONQUISTAS_DATA[id].nome;
-  notif.classList.add("vis");
-  setTimeout(() => notif.classList.remove("vis"), 4000);
-}
-
-// ============================================================================
-// MODAL DE LENDA EXPANDIDO COM EFEITOS DE FUNDO RENDERIZADOS
-// ============================================================================
-
-function mostrarModalLenda(data) {
-  cancelAnimationFrame(modalAnim);
-  document.getElementById("modal-lenda").classList.add("aberto");
-
-  document.getElementById("m-nome").innerText = data.nome.toUpperCase();
-  document.getElementById("m-tipo").innerText = data.tipo;
-  document.getElementById("m-texto").innerText = data.desc;
-  document.getElementById("m-dica-txt").innerText = data.dica;
-  document.getElementById("m-efeito").innerText = `Efeito Concedido: ${data.efeito}`;
-  document.getElementById("m-emoji").innerText = data.emoji;
-
-  // Customização de Cores Dinâmicas no Frame do Modal
-  const frameOrbe = document.getElementById("m-orbe");
-  frameOrbe.style.color = data.cor;
-  document.getElementById("m-nome").style.color = data.cor;
-  document.getElementById("m-top-bar").style.background = data.cor;
-  document.getElementById("m-dica").style.borderColor = data.cor;
-  document.getElementById("m-efeito").style.color = data.cor;
-  document.getElementById("m-efeito").style.borderColor = data.cor;
-  document.getElementById("m-btn-ok").style.borderColor = data.cor;
-  document.getElementById("m-btn-ok").style.color = data.cor;
-
-  // Efeito de Aura no Canvas Interno do Modal
-  const c = document.getElementById("modal-canvas");
-  const ctx = modalCtx;
-  c.width = 680; c.height = 500;
-  let angulo = 0;
-
-  function animarModal() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    ctx.strokeStyle = data.cor;
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.15;
-
-    // Linhas abstratas orbitando o centro do modal
-    ctx.beginPath();
-    for (let i = 0; i < c.width; i += 15) {
-      let y = c.height / 2 + Math.sin(i * 0.02 + angulo) * 40;
-      ctx.lineTo(i, y);
-    }
-    ctx.stroke();
-    angulo += 0.04;
-
-    modalAnim = requestAnimationFrame(animarModal);
-  }
-  animarModal();
-}
-
-function fecharModalLenda() {
-  cancelAnimationFrame(modalAnim);
-  document.getElementById("modal-lenda").classList.remove("aberto");
-}
-
-// ============================================================================
-// UTILITIES, INTERFACE UPDATES & ENDGAME
-// ============================================================================
-
-function alternarLanterna() {
-  if (lanternaBateria <= 0) return;
-  lanternaLigada = !lanternaLigada;
-  document.getElementById("lant-estado").innerText = lanternaLigada ? "LIGADA" : "DESLIGADA";
-  document.getElementById("lant-estado").style.color = lanternaLigada ? "#00ff7f" : "#555";
-}
-
-function atualizarHud() {
-  // Ajuste de Barras SVGs/CSS
-  document.getElementById("b-vida").style.width = status.vida + "%";
-  document.getElementById("n-vida").innerText = status.vida;
-  if(status.vida < 30) document.getElementById("row-vida").classList.add("stat-crit");
-  else document.getElementById("row-vida").classList.remove("stat-crit");
-
-  document.getElementById("b-fome").style.width = status.fome + "%";
-  document.getElementById("n-fome").innerText = status.fome;
-  
-  document.getElementById("b-sede").style.width = status.sede + "%";
-  document.getElementById("n-sede").innerText = status.sede;
-
-  document.getElementById("b-ener").style.width = status.energia + "%";
-  document.getElementById("n-ener").innerText = status.energia;
-
-  document.getElementById("b-san").style.width = status.sanidade + "%";
-  document.getElementById("n-san").innerText = status.sanidade;
-
-  document.getElementById("b-temp").style.width = (status.temp * 2) + "%";
-  document.getElementById("n-temp").innerText = Math.round(status.temp) + "°C";
-
-  // Painel Superior de Recursos Atuais (Inventário Lateral Scannable)
-  const invCont = document.getElementById("inv-wrap");
-  invCont.innerHTML = "";
-  for (let item in inventario) {
-    if (inventario[item] > 0) {
-      const chip = document.createElement("span");
-      chip.className = "inv-chip";
-      chip.innerText = `${item.toUpperCase()} ×${inventario[item]}`;
-      // Consumo rápido de alimentos via click no inventário
-      if (item === "agua_limpa") {
-        chip.onclick = () => { inventario.agua_limpa--; status.sede = Math.min(100, status.sede + 40); atualizarHud(); };
-      }
-      invCont.appendChild(chip);
-    }
-  }
-}
-
-function atualizarBussola() {
-  const dirs = ["↑ Norte", "→ Leste", "↓ Sul", "← Oeste"];
-  // Bússola muda em tempo real baseado no quadrante do mapa
-  let dIdx = 0;
-  if (playerPos.x > TAM_MAPA / 2) dIdx = 1;
-  if (playerPos.y > TAM_MAPA / 2) dIdx = 2;
-  document.getElementById("buss-txt").innerHTML = `<span class="buss-dir">${dirs[dIdx]}</span> | Posição: ${playerPos.x}, ${playerPos.y}`;
-}
-
-function adicionarLog(msg) {
-  document.getElementById("msg-atual").innerText = msg;
-}
-
-function exibirToast() {
-  const t = document.getElementById("toast");
-  t.classList.add("vis");
-  setTimeout(() => t.classList.remove("vis"), 3000);
-}
-
-function finalizarJogo(causaMorte) {
-  jogoAtivo = false;
-  cancelAnimationFrame(mundoAnim);
-  document.getElementById("jogo").style.display = "none";
-  document.getElementById("hud").style.display = "none";
-  
-  const telaFim = document.getElementById("tela-fim");
-  telaFim.classList.add("aberto");
-  
-  document.getElementById("fim-causa").innerText = causaMorte;
-  document.getElementById("f-dias").innerText = dia;
-  document.getElementById("f-lendas").innerText = `${lendasVistas.length}/10`;
-  document.getElementById("f-crafted").innerText = itensCraftados;
-
-  const cFim = document.getElementById("fim-conquistas");
-  cFim.innerHTML = "";
-  for(let c in CONQUISTAS_DATA) {
-    if(CONQUISTAS_DATA[c].dest) {
-      cFim.innerHTML += `<span class="fim-c-chip">🏆 ${CONQUISTAS_DATA[c].nome}</span>`;
-    }
-  }
-}
+    // Inicialização da Engine
+    gameLoop();
 </script>
 </body>
 </html>
