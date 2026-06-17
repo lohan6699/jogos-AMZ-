@@ -3,469 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guerreiro da Amazônia: Corrida Pela Floresta</title>
+    <title>Guardião da Amazônia: Eco-Survival</title>
     <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --dark: #1b5e20;
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --text: #ffffff;
+            --accent: #ff9100;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
         }
+
         body {
-            background: #111;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
-            color: #fff;
         }
+
         #game-container {
-            position: relative;
-            width: 800px;
-            height: 400px;
-            background: #1a3c1e;
-            border: 4px solid #2e7d32;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        canvas {
-            display: block;
-            background: linear-gradient(to bottom, #4da6ff, #85e0ff);
-        }
-        #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
+            display: grid;
+            grid-template-columns: 300px 800px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            max-width: 1120px;
             width: 100%;
-            height: 100%;
-            pointer-events: none;
+            padding: 20px;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: linear-gradient(135deg, var(--dark), var(--primary));
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        header h1 {
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Sidebar / HUD */
+        #hud {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 15px;
+            gap: 15px;
         }
-        .stats {
-            display: flex;
-            justify-content: space-between;
+
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .stat-title {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
             font-size: 20px;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            color: var(--primary-light);
         }
-        #score-box { color: #ffd700; }
-        #highscore-box { color: #a5d6a7; }
-        
-        #screen-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
+
+        .progress-bar {
             width: 100%;
+            height: 10px;
+            background: #444;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        #fill-biodiversity { background: #00e676; }
+        #fill-oxygen { background: #00b0ff; }
+
+        /* Main Game Area */
+        #main-area {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
+            gap: 20px;
         }
-        h1 {
-            color: #4caf50;
-            margin-bottom: 10px;
-            font-size: 36px;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            text-align: center;
+
+        canvas {
+            background: #2c3e50;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+            border: 2px solid #333;
+            width: 100%;
+            height: auto;
         }
-        p {
-            margin-bottom: 20px;
-            font-size: 16px;
-            color: #ccc;
-        }
-        button {
-            padding: 12px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-            background: #2e7d32;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
-            pointer-events: auto;
-        }
-        button:hover {
-            background: #388e3c;
-            transform: scale(1.05);
-        }
-        #controls-hint {
-            margin-top: 15px;
-            font-size: 14px;
-            color: #888;
-        }
-        /* Botão para Mobile */
-        #mobile-jump-btn {
+
+        /* Popups de Eventos Dinâmicos estilo RPG moderno */
+        #event-card {
+            background: rgba(30, 30, 30, 0.95);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
             display: none;
+            flex-direction: column;
+            gap: 15px;
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 70px;
-            height: 70px;
-            background: rgba(255,255,255,0.3);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            color: white;
-            font-weight: bold;
-            justify-content: center;
-            align-items: center;
-            pointer-events: auto;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            box-shadow: 0 0 30px rgba(255, 145, 0, 0.3);
+            z-index: 10;
         }
-        @media (max-width: 820px) {
-            #game-container {
-                width: 100%;
-                height: 300px;
-            }
-            #mobile-jump-btn { display: flex; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-choice {
+            background: #333;
+            text-align: left;
+            border: 1px solid #555;
+        }
+
+        .btn-choice:hover {
+            background: var(--accent);
+            color: black;
+        }
+
+        /* Notificações de Conquistas (Popups modernas) */
+        #achievement-toast {
+            position: fixed;
+            bottom: -100px;
+            right: 20px;
+            background: #ffd700;
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
         }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        
-        <div id="ui-layer">
-            <div class="stats">
-                <div id="score-box">Sementes: <span id="score">0</span></div>
-                <div id="highscore-box">Recorde: <span id="highscore">0</span></div>
+        <header>
+            <h1>Guardião da Amazônia</h1>
+            <p>Proteja a floresta contra os desmatadores e incêndios!</p>
+        </header>
+
+        <div id="hud">
+            <div class="stat-box">
+                <div class="stat-title">Pontuação / Dias</div>
+                <div id="score-val" class="stat-value">0</div>
             </div>
-            
-            <div id="mobile-jump-btn">PULAR</div>
+
+            <div class="stat-box">
+                <div class="stat-title">Biodiversidade</div>
+                <div id="biodiversity-val" class="stat-value">100%</div>
+                <div class="progress-bar"><div id="fill-biodiversity" class="progress-fill"></div></div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-title">Produção de Oxigênio do Planeta</div>
+                <div id="oxygen-val" class="stat-value">100%</div>
+                <div class="progress-bar"><div id="fill-oxygen" class="progress-fill"></div></div>
+            </div>
+
+            <div class="stat-box" style="margin-top: auto;">
+                <p style="font-size: 13px; color: #aaa; text-align: center;">Controles: Use o <b>Mouse</b> para clicar e extinguir focos de incêndio ou interceptar motosserras antes que destruam as árvores!</p>
+            </div>
         </div>
 
-        <div id="screen-overlay">
-            <h1 id="screen-title">Defensor da Amazônia</h1>
-            <p id="screen-desc">Ajude o curupira a coletar sementes sagradas e desviar dos troncos cortados pelos lenhadores!</p>
-            <button id="start-btn">JOGAR</button>
-            <div id="controls-hint">Pressione ESPAÇO, SETA PARA CIMA ou Toque na tela para pular</div>
+        <div id="main-area">
+            <canvas id="gameCanvas" width="800" height="450"></canvas>
         </div>
     </div>
 
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // UI Elements
-    const screenOverlay = document.getElementById('screen-overlay');
-    const screenTitle = document.getElementById('screen-title');
-    const screenDesc = document.getElementById('screen-desc');
-    const startBtn = document.getElementById('start-btn');
-    const scoreDisplay = document.getElementById('score');
-    const highscoreDisplay = document.getElementById('highscore');
-    const mobileJumpBtn = document.getElementById('mobile-jump-btn');
+    <div id="event-card">
+        <h3 id="event-title" style="color: var(--accent);">Evento Detectado!</h3>
+        <p id="event-desc">Madeireiros ilegais avançam pela terra indígena.</p>
+        <button class="btn btn-choice" onclick="makeChoice(1)" id="c1">Enviar fiscalização (Gasta Recursos)</button>
+        <button class="btn btn-choice" onclick="makeChoice(2)" id="c2">Ignorar e focar em reflorestamento</button>
+    </div>
 
-    // Configurações do Jogo
-    let gameState = 'MENU'; // MENU, PLAYING, GAMEOVER
-    let score = 0;
-    let highscore = localStorage.getItem('amazon_highscore') || 0;
-    highscoreDisplay.innerText = highscore;
+    <div id="achievement-toast">
+        <span style="font-size: 24px;">🏆</span>
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; opacity: 0.7;">Conquista Desbloqueada!</div>
+            <div id="ach-name">Protetor da Fauna</div>
+        </div>
+    </div>
 
-    let gameSpeed = 5;
-    const gravity = 0.6;
-    
-    // Entidades do Jogo
-    let player = {
-        x: 80,
-        y: 280,
-        width: 40,
-        height: 60,
-        vy: 0,
-        isGrounded: false,
-        jumpForce: -13,
-        color: '#ff5722', // Cabelo vermelho do Curupira
-        draw() {
-            // Corpo/Roupa de folhas
-            ctx.fillStyle = '#4caf50';
-            ctx.fillRect(this.x, this.y + 20, this.width, this.height - 20);
-            // Cabeça
-            ctx.fillStyle = '#ffb74d';
-            ctx.fillRect(this.x + 5, this.y, this.width - 10, 20);
-            // Cabelo de Fogo (Curupira)
-            ctx.fillStyle = '#ff3d00';
-            ctx.fillRect(this.x + 2, this.y - 8, this.width - 4, 10);
-            // Pés virados para trás (detalhe folclórico)
-            ctx.fillStyle = '#d7ccc8';
-            ctx.fillRect(this.x - 5, this.y + this.height - 8, 12, 8);
-        },
-        jump() {
-            if (this.isGrounded) {
-                this.vy = this.jumpForce;
-                this.isGrounded = false;
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Estado do Jogo (Game State)
+        let state = {
+            score: 0,
+            biodiversity: 100,
+            oxygen: 100,
+            gameActive: true,
+            threats: [],
+            trees: [],
+            lastThreatSpawn: 0,
+            threatSpawnRate: 2000, // milisegundos
+            conquistas: { ecoWarrior: false, heroi: false }
+        };
+
+        // Inicializar Árvores da Floresta no Cenário
+        function initForest() {
+            state.trees = [];
+            for (let i = 0; i < 25; i++) {
+                state.trees.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: Math.random() * (canvas.height - 100) + 80,
+                    size: Math.random() * 15 + 20,
+                    health: 100
+                });
             }
-        },
-        update() {
-            this.vy += gravity;
-            this.y += this.vy;
+        }
+
+        // Criar Ameaças (Fogo ou Motosserra)
+        function spawnThreat() {
+            if (!state.gameActive) return;
+            const types = ['fire', 'chainsaw'];
+            const randomType = types[Math.floor(Math.random() * types.length)];
             
-            // Colisão com o chão fixo (altura do chão é 340)
-            if (this.y + this.height >= 340) {
-                this.y = 340 - this.height;
-                this.vy = 0;
-                this.isGrounded = true;
-            }
+            state.threats.push({
+                x: Math.random() * (canvas.width - 50) + 25,
+                y: Math.random() * (canvas.height - 120) + 80,
+                type: randomType,
+                radius: 20,
+                pulse: 0
+            });
         }
-    };
 
-    let obstacles = [];
-    let items = [];
-    let particles = [];
-    let clouds = [
-        {x: 100, y: 50, size: 40, speed: 0.5},
-        {x: 450, y: 80, size: 60, speed: 0.3},
-        {x: 700, y: 30, size: 35, speed: 0.6}
-    ];
+        // Sistema de Som Dinâmico (Web Audio API - Sem precisar de arquivos externos de áudio)
+        function playTone(freq, type, duration) {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.value = freq;
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
 
-    // Classes para geração de objetos modernos e limpos
-    class Obstacle {
-        constructor() {
-            this.width = 30 + Math.random() * 20;
-            this.height = 40 + Math.random() * 30;
-            this.x = canvas.width + this.width;
-            this.y = 340 - this.height;
-            this.color = '#795548'; // Tronco cortado
-        }
-        update() {
-            this.x -= gameSpeed;
-        }
-        draw() {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            // Detalhe de linhas de motosserra/corte
-            ctx.fillStyle = '#5d4037';
-            ctx.fillRect(this.x + 2, this.y + 5, this.width - 4, 5);
-        }
-    }
+        // Clique para resolver ameaças
+        canvas.addEventListener('click', (e) => {
+            if (!state.gameActive) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
 
-    class Item {
-        constructor() {
-            this.size = 15;
-            this.x = canvas.width + 50;
-            this.y = 180 + Math.random() * 100;
-            this.color = '#ffd700'; // Semente dourada brilhante
-            this.angle = 0;
-        }
-        update() {
-            this.x -= gameSpeed;
-            this.angle += 0.1; // Efeito de rotação moderno
-        }
-        draw() {
-            ctx.save();
-            ctx.translate(this.x + this.size/2, this.y + this.size/2);
-            ctx.rotate(this.angle);
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(0, 0, this.size/2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-        }
-    }
-
-    class Particle {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.size = Math.random() * 5 + 2;
-            this.vx = (Math.random() - 0.5) * 6;
-            this.vy = (Math.random() - 0.5) * 6;
-            this.alpha = 1;
-        }
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.alpha -= 0.03;
-        }
-        draw() {
-            ctx.save();
-            ctx.globalAlpha = this.alpha;
-            ctx.fillStyle = '#ffd700';
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.restore();
-        }
-    }
-
-    // Spawners controlados por tempo/distância
-    let obstacleTimer = 0;
-    let itemTimer = 0;
-
-    function resetGame() {
-        score = 0;
-        gameSpeed = 6;
-        obstacles = [];
-        items = [];
-        particles = [];
-        player.y = 280;
-        player.vy = 0;
-        scoreDisplay.innerText = score;
-    }
-
-    function startGame() {
-        resetGame();
-        gameState = 'PLAYING';
-        screenOverlay.style.display = 'none';
-    }
-
-    function gameOver() {
-        gameState = 'GAMEOVER';
-        if (score > highscore) {
-            highscore = score;
-            localStorage.setItem('amazon_highscore', highscore);
-            highscoreDisplay.innerText = highscore;
-        }
-        screenTitle.innerText = "Fim de Jogo!";
-        screenDesc.innerText = `Você salvou ${score} sementes da floresta moderna. Tente quebrar seu recorde!`;
-        startBtn.innerText = "JOGAR DE NOVO";
-        screenOverlay.style.display = 'flex';
-    }
-
-    // Loop Principal do Jogo (Engine de Renderização e Física)
-    function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 1. DESENHAR CENÁRIO (Céu e Nuvens)
-        ctx.fillStyle = 'linear-gradient(to bottom, #4da6ff, #85e0ff)';
-        clouds.forEach(cloud => {
-            cloud.x -= cloud.speed;
-            if (cloud.x + cloud.size < 0) cloud.x = canvas.width + 50;
-            ctx.fillStyle = 'rgba(255,255,255,0.7)';
-            ctx.beginPath();
-            ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
-            ctx.arc(cloud.x + cloud.size*0.6, cloud.y - cloud.size*0.2, cloud.size*0.8, 0, Math.PI * 2);
-            ctx.fill();
+            state.threats.forEach((threat, index) => {
+                const dist = Math.hypot(threat.x - clickX, threat.y - clickY);
+                if (dist < threat.radius + 15) {
+                    // Acertou a ameaça!
+                    state.threats.splice(index, 1);
+                    state.score += 10;
+                    playTone(440, 'sine', 0.1); // Som de acerto positivo
+                    
+                    // Checar Conquista por pontuação
+                    if (state.score >= 100 && !state.conquistas.ecoWarrior) {
+                        triggerAchievement("Defensor Supremo");
+                        state.conquistas.ecoWarrior = true;
+                    }
+                }
+            });
         });
 
-        // Árvores de fundo (Parallax simples)
-        ctx.fillStyle = '#1b5e20';
-        for(let i = 0; i < canvas.width; i += 120) {
+        // Loop Principal do Jogo (60 FPS Moderno)
+        function gameLoop(timestamp) {
+            if (!state.gameActive) return;
+
+            // Limpar Tela com Tom de Grama Verdejante
+            ctx.fillStyle = '#1e3f20';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Desenhar o Rio Amazonas cruzando o mapa
+            ctx.fillStyle = '#29b6f6';
             ctx.beginPath();
-            ctx.moveTo(i - 40, 340);
-            ctx.lineTo(i + 20, 150);
-            ctx.lineTo(i + 80, 340);
+            ctx.moveTo(0, 150);
+            ctx.bezierCurveTo(200, 100, 400, 300, 800, 200);
+            ctx.lineTo(800, 260);
+            ctx.bezierCurveTo(400, 360, 200, 160, 0, 210);
             ctx.fill();
-        }
 
-        // Chão da Floresta Amazônica
-        ctx.fillStyle = '#2e7d32';
-        ctx.fillRect(0, 340, canvas.width, 60);
-        ctx.fillStyle = '#1b5e20';
-        ctx.fillRect(0, 340, canvas.width, 8);
+            // Desenhar as Árvores
+            state.trees.forEach(tree => {
+                // Tronco
+                ctx.fillStyle = '#5c4033';
+                ctx.fillRect(tree.x - 4, tree.y, 8, tree.size);
+                // Copa folhagem
+                ctx.fillStyle = '#2e7d32';
+                ctx.beginPath();
+                ctx.arc(tree.x, tree.y, tree.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
 
-        if (gameState === 'PLAYING') {
-            // Aumenta a velocidade do jogo gradualmente de forma imperceptível
-            gameSpeed += 0.001;
+            // Processar e Desenhar Ameaças Ativas
+            state.threats.forEach((threat, index) => {
+                threat.pulse += 0.1;
+                let scale = threat.radius + Math.sin(threat.pulse) * 4;
 
-            // Atualiza Jogador
-            player.update();
-            
-            // Gerar Obstáculos de tempos em tempos
-            obstacleTimer++;
-            if (obstacleTimer > Math.random() * 40 + 70) {
-                obstacles.push(new Obstacle());
-                obstacleTimer = 0;
-            }
-
-            // Gerar Itens (Sementes)
-            itemTimer++;
-            if (itemTimer > Math.random() * 50 + 50) {
-                items.push(new Item());
-                itemTimer = 0;
-            }
-        }
-
-        // Renderizar e Atualizar Obstáculos
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-            if (gameState === 'PLAYING') obstacles[i].update();
-            obstacles[i].draw();
-
-            // Detecção de Colisão com o Jogador (AABB box)
-            if (
-                player.x < obstacles[i].x + obstacles[i].width &&
-                player.x + player.width > obstacles[i].x &&
-                player.y < obstacles[i].y + obstacles[i].height &&
-                player.y + player.height > obstacles[i].y
-            ) {
-                gameOver();
-            }
-
-            // Limpar do array se sair da tela
-            if (obstacles[i].x + obstacles[i].width < 0) {
-                obstacles.splice(i, 1);
-            }
-        }
-
-        // Renderizar e Atualizar Itens (Sementes)
-        for (let i = items.length - 1; i >= 0; i--) {
-            if (gameState === 'PLAYING') items[i].update();
-            items[i].draw();
-
-            // Coleta de Item
-            if (
-                player.x < items[i].x + items[i].size &&
-                player.x + player.width > items[i].x &&
-                player.y < items[i].y + items[i].size &&
-                player.y + player.height > items[i].y
-            ) {
-                score += 10;
-                scoreDisplay.innerText = score;
-                
-                // Criação do efeito de partículas moderno
-                for(let p=0; p<8; p++) {
-                    particles.push(new Particle(items[i].x, items[i].y));
+                if (threat.type === 'fire') {
+                    // Desenha Fogo Animado
+                    ctx.fillStyle = `rgba(255, 61, 0, ${0.7 + Math.sin(threat.pulse)*0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(threat.x, threat.y, scale, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffea00';
+                    ctx.beginPath();
+                    ctx.arc(threat.x, threat.y, scale * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Desenha Motosserra (Cinza/Aço)
+                    ctx.fillStyle = '#757575';
+                    ctx.fillRect(threat.x - 15, threat.y - 8, 30, 16);
+                    ctx.fillStyle = '#ff9100';
+                    ctx.fillRect(threat.x - 20, threat.y - 4, 10, 8);
                 }
-                items.splice(i, 1);
-                continue;
+
+                // Dano periódico aos recursos do jogador por ameaças não tratadas
+                state.biodiversity -= 0.04;
+                state.oxygen -= 0.03;
+            });
+
+            // Gerador de Ameaças Temporal
+            if (timestamp - state.lastThreatSpawn > state.threatSpawnRate) {
+                spawnThreat();
+                state.lastThreatSpawn = timestamp;
+                // Aumenta a dificuldade gradualmente acelerando o spawn
+                if(state.threatSpawnRate > 600) state.threatSpawnRate -= 25;
             }
 
-            if (items[i].x + items[i].size < 0) items.splice(i, 1);
+            // Disparar Eventos Randômicos Narrativos a cada certos pontos
+            if (state.score > 0 && state.score % 150 === 0 && !document.getElementById('event-card').style.display) {
+                 triggerEvent();
+            }
+
+            // Atualizar o HUD na Interface Gráfica
+            updateHUD();
+
+            // Verificar Condições de Derrota (Game Over)
+            if (state.biodiversity <= 0 || state.oxygen <= 0) {
+                endGame();
+                return;
+            }
+
+            requestAnimationFrame(gameLoop);
         }
 
-        // Processar Partículas
-        for(let i = particles.length - 1; i >= 0; i--) {
-            particles[i].update();
-            particles[i].draw();
-            if(particles[i].alpha <= 0) particles.splice(i, 1);
+        // Atualização da UI moderna
+        function updateHUD() {
+            document.getElementById('score-val').innerText = `${state.score} pts`;
+            document.getElementById('biodiversity-val').innerText = `${Math.max(0, Math.floor(state.biodiversity))}%`;
+            document.getElementById('oxygen-val').innerText = `${Math.max(0, Math.floor(state.oxygen))}%`;
+
+            document.getElementById('fill-biodiversity').style.width = `${state.biodiversity}%`;
+            document.getElementById('fill-oxygen').style.width = `${state.oxygen}%`;
         }
 
-        // Desenhar Personagem principal por cima de tudo
-        player.draw();
+        // Sistema de Eventos de Escolhas (Narrativa procedural de jogos modernos)
+        function triggerEvent() {
+            const card = document.getElementById('event-card');
+            card.style.display = 'flex';
+            // Pausa temporária do visual das ameaças
+            state.threats = [];
+        }
 
+        function makeChoice(option) {
+            const card = document.getElementById('event-card');
+            card.style.display = 'none';
+            
+            if (option === 1) {
+                // Boa escolha ecológica, ganha biodiversidade mas custa pontos de foco
+                state.biodiversity = Math.min(100, state.biodiversity + 20);
+                state.score += 20;
+                playTone(600, 'triangle', 0.3);
+            } else {
+                // Escolha negligente
+                state.oxygen -= 15;
+                state.score += 50; // bônus de pontos ilusório
+                playTone(150, 'sawtooth', 0.5);
+            }
+            // Retoma pontuação para evitar loops infinitos de popups
+            state.score += 10; 
+        }
+
+        // Notificação de Conquistas (Achievements System)
+        function triggerAchievement(name) {
+            document.getElementById('ach-name').innerText = name;
+            const toast = document.getElementById('achievement-toast');
+            toast.style.bottom = '20px';
+            playTone(880, 'sine', 0.4);
+            setTimeout(() => {
+                toast.style.bottom = '-100px';
+            }, 4000);
+        }
+
+        // Fim de Jogo
+        function endGame() {
+            state.gameActive = false;
+            ctx.fillStyle = 'rgba(0,0,0,0.85)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#ff1744';
+            ctx.font = 'bold 40px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText("FIM DE JOGO", canvas.width / 2, canvas.height / 2 - 20);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '20px Segoe UI';
+            ctx.fillText(`Você defendeu a Amazônia por ${state.score} pontos históricos.`, canvas.width / 2, canvas.height / 2 + 30);
+            
+            ctx.fillStyle = var(--primary-light);
+            ctx.fillText("Recarregue a página para jogar novamente!", canvas.width / 2, canvas.height / 2 + 80);
+        }
+
+        // Inicialização Inicial
+        initForest();
         requestAnimationFrame(gameLoop);
-    }
-
-    // Controles (Input modernizado para PC e Mobile)
-    window.addEventListener('keydown', (e) => {
-        if ((e.code === 'Space' || e.code === 'ArrowUp')) {
-            if (gameState === 'PLAYING') {
-                player.jump();
-            } else if (gameState === 'MENU' || gameState === 'GAMEOVER') {
-                startGame();
-            }
-        }
-    });
-
-    // Toque para telas Mobile e Cliques de Botão
-    startBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Evita dar pulo duplo ao clicar no botão
-        startGame();
-    });
-    
-    mobileJumpBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (gameState === 'PLAYING') player.jump();
-    });
-
-    // Inicialização da Engine
-    gameLoop();
-</script>
+    </script>
 </body>
 </html>
